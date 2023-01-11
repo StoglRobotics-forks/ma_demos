@@ -1,5 +1,5 @@
 
-# Copyright 2021 Stogl Robotics Consulting UG (haftungsbeschränkt)
+# Copyright 2022 Stogl Robotics Consulting UG (haftungsbeschränkt)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@ def generate_launch_description():
         [
             FindPackageShare("ma_demo_bringup"),
             "controller_config",
-            "kuka_6dof_forward_position_publisher_goals.yaml",
+            "kuka_6dof_forward_position_controller_goals.yaml",
         ]
     )
 
     return LaunchDescription(
         [
             Node(
-                package="ros2_control_test_nodes",
+                package="ros2_controllers_test_nodes",
                 executable="publisher_forward_position_controller",
                 name="publisher_forward_position_controller",
                 parameters=[position_goals],

@@ -73,7 +73,7 @@ def generate_launch_description():
 
     robot_controllers = PathJoinSubstitution(
         [FindPackageShare("ma_demo_bringup"), "controller_config",
-         "kuka_6dof_forward_position_controller.yaml"]
+         "kuka_6dof_controllers.yaml"]
     )
 
     control_node = Node(
