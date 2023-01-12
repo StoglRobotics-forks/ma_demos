@@ -1,0 +1,23 @@
+<library path="two_distributed_rrbots_hw">
+  <class name="two_distributed_rrbots_hw/RRBotSystemMainPositionOnlyHardware"
+         type="ros2_control_demo_hardware::RRBotSystemMainPositionOnlyHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      The ros2_control RRDiffbot arm system example.
+    </description>
+  </class>
+  <class name="two_distributed_rrbots_hw/RRBotSystemOnePositionOnlyHardware"
+         type="ros2_control_demo_hardware::RRBotSystemOnePositionOnlyHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      The ros2_control RRDiffbot arm system example.
+    </description>
+  </class>
+  <class name="two_distributed_rrbots_hw/RRBotSystemTwoPositionOnlyHardware"
+         type="ros2_control_demo_hardware::RRBotSystemTwoPositionOnlyHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      The ros2_control RRDiffbot arm system example.
+    </description>
+  </class>
+</library>
