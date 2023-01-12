@@ -1,0 +1,17 @@
+repositories:
+  ma_demos:
+    type: git
+    url: git@github.com:mamueluth/ma_demos.git
+    version: main
+  ros2_control:
+    type: git
+    url: git@github.com:mamueluth/ros2_control.git
+    version: distributed_control_poc
+  ros2_control_kuka_driver:
+    type: git
+    url: git@github.com:StoglRobotics-forks/ros2_control_kuka_driver.git
+    version: add_kuka_kr16_controllers
+  ros2_controllers:
+    type: git
+    url: git@github.com:mamueluth/ros2_controllers.git
+    version: distributed_control_poc
