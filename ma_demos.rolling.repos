@@ -1,4 +1,8 @@
 repositories:
+  kuka_experimental:
+    type: git
+    url: git@github.com:StoglRobotics-forks/kuka_experimental.git
+    version: ros2-minimal-add-kr16
   ma_demos:
     type: git
     url: git@github.com:StoglRobotics-forks/ma_demos.git
