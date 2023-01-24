@@ -11,6 +11,8 @@ This package is a collection of all setups used for demonstration purposes for m
 * *kuka_kr_16*: Consist of a basic demonstration of the ros2_control concepts on the kuka kr 16 robot (forward_position_controller and joint_trajectory_controller).
 
 ## How to use:
+If you are just interested how to start the demos themselves have a look below under the [quickstart](https://github.com/StoglRobotics-forks/ma_demos#quickstart) section.
+### Installation:
 1. Update system:
     ```
     sudo apt update
@@ -50,3 +52,30 @@ This package is a collection of all setups used for demonstration purposes for m
    ```
    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
    ```
+
+### Quickstart:
+After you hav successfully built the project you can then start the demos as shown below.
+
+* *Two_distributed_rrbots*:
+    Open first terminal and execute:
+    ```
+    ros2 launch two_distributed_rrbots_bringup two_distributed_rrbots.launch.py 
+    ```
+    Then open the second terminal and execute:
+    ```
+    ros2 launch two_distributed_rrbots_bringup test_two_distributed_rrbots_forward_position_controller.launch.py
+    ```
+    
+* *kuka_kr_16*:
+    Open first terminal and execute:
+    ```
+    ros2 launch kuka_kr16_2_bringup kuka_kr16_2.launch.py 
+    ```
+    Then open the second terminal and execute:
+    ```
+    ros2 launch kuka_kr16_2_bringup test_kuka_kr16_2_forward_position_controller.launch.py
+    ```
+    Or
+    ```
+    ros2 launch kuka_kr16_2_bringup test_kuka_kr16_2_joint_trajectory_controller.launch.py
+    ```
