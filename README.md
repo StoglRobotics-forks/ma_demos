@@ -11,29 +11,29 @@ This package is a collection of all setups used for demonstration purposes for m
 * *kuka_kr_16*: Consist of a basic demonstration of the ros2_control concepts on the kuka kr 16 robot (forward_position_controller and joint_trajectory_controller).
 
 ## How to use:
-1. Install ROS 2 Rolling:
+1. Update system:
+    ```
+    sudo apt update
+    sudo apt upgrade
+    ```
+2. Install ROS 2 Rolling:
   * a) Either setup a Docker container with Rolling installed using [RosTeamWS](https://rtw.stoglrobotics.de/master/use-cases/operating_system/create_setup_workspace.html#docker-workspace).
  If you use this method, don't forget to switch to your docker container **before continuing** with the `rtw_switch_to_docker` command.
     
   * b) Or [install ROS 2 Rolling](https://docs.ros.org/en/rolling/Installation.html) directly on your computer.
-2. Make sure `colcon`and `vcs` are installed:
+3. Make sure `colcon`and `vcs` are installed:
     ```
     sudo apt install python3-colcon-common-extensions python3-vcstool
     ```
-3. Setup new workspace (_If you used [RosTeamWS](https://rtw.stoglrobotics.de/master/use-cases/operating_system/create_setup_workspace.html) and docker you can skip this step._):
+4. Setup new workspace (_If you used [RosTeamWS](https://rtw.stoglrobotics.de/master/use-cases/operating_system/create_setup_workspace.html) and docker you can skip this step._):
     ```
     mkdir -p ~/workspace/rolling_ws/src  # or go to an existing one
     ```
-4. Clone this repo:
+5. Clone this repo:
     ```
     cd ~/workspace/rolling_ws/src
     git clone git@github.com:StoglRobotics-forks/ma_demos.git 
     (Or gh repo clone StoglRobotics-forks/ma_demos)
-    ```
-5. Update system:
-    ```
-    sudo apt update
-    sudo apt upgrade
     ```
 6. Make sure your base workspace is sourced and update dependencies:
    ```
