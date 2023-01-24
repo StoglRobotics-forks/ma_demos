@@ -9,3 +9,44 @@ This package is a collection of all setups used for demonstration purposes for m
 * *Two_distributed_rrbots*: Consists of three robots. Each robots consists of 3 segments connected by 2 revolt revolution joints. All three robots are controlled by the central controller manager. However two of the rrbots are started in separate namespaces and are managed by a sub controller manager respectively. Those register at the central controller manager.
 
 * *kuka_kr_16*: Consist of a basic demonstration of the ros2_control concepts on the kuka kr 16 robot (forward_position_controller and joint_trajectory_controller).
+
+## How to use:
+1. Install ROS 2 Rolling:
+  * a) Either setup a Docker container with Rolling installed using [RosTeamWS](https://rtw.stoglrobotics.de/master/use-cases/operating_system/create_setup_workspace.html#docker-workspace).
+ If you use this method, don't forget to switch to your docker container **before continuing** with the `rtw_switch_to_docker` command.
+    
+  * b) Or [install ROS 2 Rolling](https://docs.ros.org/en/rolling/Installation.html) directly on your computer.
+2. Make sure `colcon`and `vcs` are installed:
+    ```
+    sudo apt install python3-colcon-common-extensions python3-vcstool
+    ```
+3. Setup new workspace (_If you used [RosTeamWS](https://rtw.stoglrobotics.de/master/use-cases/operating_system/create_setup_workspace.html) and docker you can skip this step._):
+    ```
+    mkdir -p ~/workspace/rolling_ws/src  # or go to an existing one
+    ```
+4. Clone this repo:
+    ```
+    cd ~/workspace/rolling_ws/src
+    git clone git@github.com:StoglRobotics-forks/ma_demos.git 
+    (Or gh repo clone StoglRobotics-forks/ma_demos)
+    ```
+5. Update system:
+    ```
+    sudo apt update
+    sudo apt upgrade
+    ```
+6. Make sure your base workspace is sourced and update dependencies:
+   ```
+   source /opt/ros/rolling/setup.bash # source ws
+   rosdep update                      # update dependencies
+   ```
+7. Get the relevant packages and install all additional dependencies:
+   ```
+   cd ~/workspace/rolling_ws/         # or your workspace base direcotry
+   vcs import src --skip-existing --input src/ma_demos/ma_demos.rolling.repos 
+   rosdep install --ignore-src --from-paths src -y -r
+   ```
+8. Finally compile everything:
+   ```
+   colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
+   ```
