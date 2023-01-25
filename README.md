@@ -75,7 +75,31 @@ After you hav successfully built the project you can then start the demos as sho
     ```
     ros2 launch kuka_kr16_2_bringup test_kuka_kr16_2_forward_position_controller.launch.py
     ```
-    Or
+    Or if you want to start the _position_trajectory_controller_:
+    
+    1. Load the controller by executing the following command:
+        ```
+        ros2 control load_controller position_trajectory_controller
+        ```
+    2. Configure the newly loaded controller:
+        ```
+        ros2 control set_controller_state position_trajectory_controller inactive 
+        ```
+    3. Switch the _forward_position_controller_ and the _position_trajectory_controller_:
+        ```
+        ros2 control switch_controllers --deactivate forward_position_controller --activate position_trajectory_controller
+        ```
+    4. Check that everything is loaded as planned:
+        ```
+        ros2 control list_controllers
+        ```
+        Which should print something like this:
+        ```
+        joint_state_broadcaster[joint_state_broadcaster/JointStateBroadcaster] active
+        forward_position_controller[forward_command_controller/ForwardCommandController inactive
+        position_trajectory_controller[joint_trajectory_controller/JointTrajectoryController] active   
+        ```
+    **Finally:** Start the controller execution with:
     ```
     ros2 launch kuka_kr16_2_bringup test_kuka_kr16_2_joint_trajectory_controller.launch.py
     ```
