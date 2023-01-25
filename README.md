@@ -45,7 +45,7 @@ If you are just interested how to start the demos themselves have a look below u
 7. Get the relevant packages and install all additional dependencies:
    ```
    cd ~/workspace/rolling_ws/         # or your workspace base direcotry
-   vcs import src --skip-existing --input src/ma_demos/ma_demos.rolling.repos 
+   vcs import -w 1 src --skip-existing --input src/ma_demos/ma_demos.rolling.repos 
    rosdep install --ignore-src --from-paths src -y -r
    ```
 8. Finally compile everything:
