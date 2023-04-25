@@ -3,6 +3,7 @@
     update_rate: 10  # Hz
     distributed: true
     sub_controller_manager: true
+    distributed_interfaces_publish_period: 12
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
