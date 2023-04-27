@@ -14,7 +14,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 
 install(
-  DIRECTORY controller_config launch
+  DIRECTORY controller_config launch rviz_config
   DESTINATION share/${PROJECT_NAME}
 )
 
