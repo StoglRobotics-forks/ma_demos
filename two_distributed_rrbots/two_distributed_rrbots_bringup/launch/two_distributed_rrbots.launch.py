@@ -85,7 +85,8 @@ def generate_launch_description():
                 ]
             ),
             " ",
-            "prefix:=sub_1_",
+            "prefix:=",
+            satellite_1_ns_name + "_",
             " ",
             "base_color:=green",
         ]
@@ -103,7 +104,8 @@ def generate_launch_description():
                 ]
             ),
             " ",
-            "prefix:=sub_2_",
+            "prefix:=",
+            satellite_2_ns_name + "_",
             " ",
             "base_color:=blue",
         ]
@@ -174,7 +176,7 @@ def generate_launch_description():
     robot_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["forward_position_controller", "-c", "/controller_manager"],
+        arguments=["position_trajectory_controller", "-c", "/controller_manager"],
     )
 
     delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = (
