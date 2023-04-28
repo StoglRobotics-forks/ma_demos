@@ -74,21 +74,6 @@ def generate_launch_description():
         arguments=["joint_state_broadcaster", "-c", "/controller_manager"],
     )
 
-    robot_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["forward_position_controller", "-c", "/controller_manager"],
-    )
-
-    delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = (
-        RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=joint_state_broadcaster_spawner,
-                on_exit=[robot_controller_spawner],
-            )
-        )
-    )
-
     # RVIZ
     rviz_config_file = PathJoinSubstitution(
         [
@@ -116,9 +101,8 @@ def generate_launch_description():
 
     nodes = [
         main_control_node,
-        joint_state_broadcaster_spawner,
-        delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
-        delay_rviz_after_joint_state_broadcaster_spawner,
+        # joint_state_broadcaster_spawner,
+        # delay_rviz_after_joint_state_broadcaster_spawner,
     ]
 
     return LaunchDescription(nodes)
