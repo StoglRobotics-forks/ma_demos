@@ -260,7 +260,7 @@ def generate_launch_description():
         ],
     )
 
-    # SUB 1
+    # SUB 2
     robot_satellite_2_description_content = Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),

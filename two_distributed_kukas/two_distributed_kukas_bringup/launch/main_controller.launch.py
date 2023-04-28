@@ -14,35 +14,74 @@
 
 
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler
-from launch.event_handlers import OnProcessExit
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
-def delete_direct_slash_duplicate(t):
-    if not (t[0] == "/" and t[1] == "/"):
-        return t[0]
+def generate_launch_description():
+    declared_arguments = []
 
-
-def prepend_slash_if_not_null(prefix):
-    if not prefix:
-        return ""
-    ns = "/" + prefix
-    # remove all occurrences of slashes that directly follow each other ("//Prefix/////Namespace//" -> "/Prefix/Namespace/")
-    return "".join(
-        filter(
-            lambda item: item is not None,
-            map(delete_direct_slash_duplicate, zip(ns, ns[1:] + " ")),
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "log_level_driver",
+            default_value="info",
+            description="Set the logging level of the loggers of all started nodes.",
+            choices=[
+                "debug",
+                "DEBUG",
+                "info",
+                "INFO",
+                "warn",
+                "WARN",
+                "error",
+                "ERROR",
+                "fatal",
+                "FATAL",
+            ],
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "log_level_all",
+            default_value="info",
+            description="Set the logging level of the loggers of all started nodes.",
+            choices=[
+                "debug",
+                "DEBUG",
+                "info",
+                "INFO",
+                "warn",
+                "WARN",
+                "error",
+                "ERROR",
+                "fatal",
+                "FATAL",
+            ],
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "control_node",
+            default_value="ros2_control_node_max_update_rate",
+            description="Change the control node which is used.",
+            choices=[
+                "ros2_control_node",
+                "ros2_control_node_steady_clock",
+                "ros2_control_node_max_update_rate",
+                "ros2_control_node_max_update_rate_sc",
+                "ros2_control_node_fixed_period",
+                "ros2_control_node_fixed_period_sc",
+            ],
         )
     )
 
-
-def generate_launch_description():
-    # TODO(Manuel): find a way to propagate to controllers.yaml
-    # otherwise we have to define there too
+    # initialize arguments
+    control_node = LaunchConfiguration("control_node")
+    log_level_driver = LaunchConfiguration("log_level_driver")
+    log_level_all = LaunchConfiguration("log_level_all")
 
     # Get controller manager settings
     main_robot_controllers = PathJoinSubstitution(
@@ -56,8 +95,8 @@ def generate_launch_description():
     # MAIN CONTROLLER MANAGER
     # Main controller manager node
     main_control_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
+        package="kuka_ros2_control_support",
+        executable=control_node,
         parameters=[main_robot_controllers],
         remappings=[
             (
@@ -65,44 +104,17 @@ def generate_launch_description():
                 "/position_commands",
             ),
         ],
+        arguments=[
+            "--ros-args",
+            "--log-level",
+            ["KukaSystemPositionOnlyHardware:=", log_level_driver],
+            "--ros-args",
+            "--log-level",
+            log_level_all,
+        ],
         output="both",
     )
 
-    joint_state_broadcaster_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["joint_state_broadcaster", "-c", "/controller_manager"],
-    )
+    nodes = [main_control_node]
 
-    # RVIZ
-    rviz_config_file = PathJoinSubstitution(
-        [
-            FindPackageShare("two_distributed_rrbots_description"),
-            "rviz_config",
-            "two_distributed_rrbots_all_in_on.rviz",
-        ]
-    )
-
-    rviz_node = Node(
-        package="rviz2",
-        executable="rviz2",
-        name="rviz2",
-        output="log",
-        arguments=["-d", rviz_config_file],
-    )
-
-    # Delay rviz start after `joint_state_broadcaster`
-    delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=joint_state_broadcaster_spawner,
-            on_exit=[rviz_node],
-        )
-    )
-
-    nodes = [
-        main_control_node,
-        # joint_state_broadcaster_spawner,
-        # delay_rviz_after_joint_state_broadcaster_spawner,
-    ]
-
-    return LaunchDescription(nodes)
+    return LaunchDescription(declared_arguments + nodes)

@@ -189,10 +189,18 @@ def generate_launch_description():
     )
 
     sub_2_control_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
+        package="kuka_ros2_control_support",
+        executable=control_node,
         namespace=satellite_2_ns_name,
         parameters=[robot_satellite_2_description, robot_controllers_satellite_2],
+        arguments=[
+            "--ros-args",
+            "--log-level",
+            ["KukaSystemPositionOnlyHardware:=", log_level_driver],
+            "--ros-args",
+            "--log-level",
+            log_level_all,
+        ],
         remappings=[
             (
                 "/forward_position_controller/commands",
@@ -229,7 +237,7 @@ def generate_launch_description():
     nodes = [
         sub_2_control_node,
         robot_state_pub_node_2,
-        # joint_state_broadcaster_spawner_2,
+        joint_state_broadcaster_spawner_2,
     ]
 
     return LaunchDescription(declared_arguments + nodes)
