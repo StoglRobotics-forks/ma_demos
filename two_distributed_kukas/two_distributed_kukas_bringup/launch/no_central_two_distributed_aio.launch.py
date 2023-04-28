@@ -148,7 +148,7 @@ def generate_launch_description():
         [
             FindPackageShare("two_distributed_kukas_bringup"),
             "controller_config",
-            "one_central_one_distributed.yaml",
+            "no_central_two_distributed_aio.yaml",
         ]
     )
 
@@ -299,7 +299,7 @@ def generate_launch_description():
         ]
     )
     robot_satellite_2_description = {
-        "robot_description": robot_satellite_1_description_content
+        "robot_description": robot_satellite_2_description_content
     }
     robot_controllers_satellite_2 = PathJoinSubstitution(
         [
