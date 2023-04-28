@@ -2,7 +2,7 @@ repositories:
   kuka_experimental:
     type: git
     url: git@github.com:StoglRobotics-forks/kuka_experimental.git
-    version: concept_testing
+    version: ros2-minimal-add-kr16
   ma_demos:
     type: git
     url: git@github.com:StoglRobotics-forks/ma_demos.git
@@ -10,7 +10,11 @@ repositories:
   ros2_control:
     type: git
     url: git@github.com:StoglRobotics-forks/ros2_control.git
-    version: distributed_control_base
+    version: distributed_control_poc
+  ros2_control_kuka_driver:
+    type: git
+    url: git@github.com:StoglRobotics-forks/ros2_control_kuka_driver.git
+    version: add_kuka_kr16_controllers
   ros2_controllers:
     type: git
     url: git@github.com:StoglRobotics-forks/ros2_controllers.git
