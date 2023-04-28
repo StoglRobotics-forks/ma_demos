@@ -189,7 +189,7 @@ def generate_launch_description():
         [
             FindPackageShare("two_distributed_kukas_bringup"),
             "controller_config",
-            "main_controller.yaml",
+            "one_central_one_distributed.yaml",
         ]
     )
 
@@ -254,10 +254,10 @@ def generate_launch_description():
             ),
             " ",
             "prefix:=",
-            satellite_1_ns_name,
+            satellite_1_ns_name + "_",
             " ",
             "origin:=",
-            '"3 0 0"',
+            '"0 3 0"',
             " ",
             "use_mock_hardware:=",
             use_mock_hardware,
