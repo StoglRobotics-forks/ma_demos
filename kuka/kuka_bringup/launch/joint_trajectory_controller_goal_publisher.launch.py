@@ -1,4 +1,4 @@
-# Copyright 2021 Stogl Robotics Consulting UG (haftungsbeschränkt)
+# Copyright 2022 Stogl Robotics Consulting UG (haftungsbeschränkt)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ def generate_launch_description():
 
     position_goals = PathJoinSubstitution(
         [
-            FindPackageShare("two_distributed_kukas_bringup"),
+            FindPackageShare("kuka_bringup"),
             "controller_config",
-            "two_distributed_kukas_6dof_joint_trajectory_controller_goals.yaml",
+            "kuka_6dof_joint_trajectory_controller_goals.yaml",
         ]
     )
 

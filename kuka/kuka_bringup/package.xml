@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>kuka_kr16_2_bringup</name>
+  <name>kuka_bringup</name>
   <version>0.0.0</version>
   <description>Lanchfiles for demos of my master thesis</description>
   <maintainer email="manuel.muth@stoglrobotics.de">Manuel Muth</maintainer>
