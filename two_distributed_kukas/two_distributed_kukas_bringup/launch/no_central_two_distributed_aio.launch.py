@@ -46,6 +46,12 @@ def prepend_slash_if_not_null(prefix):
 
 def generate_launch_description():
     controller_manager_name = "controller_manager"
+    satellite_1_ns_name = "sub_1"
+    slash_controller_manager_name = prepend_slash_if_not_null(controller_manager_name)
+    slash_satellite_1_ns_name = prepend_slash_if_not_null(satellite_1_ns_name)
+    satellite_1_controller_manager_name = (
+        slash_satellite_1_ns_name + slash_controller_manager_name
+    )
     satellite_2_ns_name = "sub_2"
     slash_controller_manager_name = prepend_slash_if_not_null(controller_manager_name)
     slash_satellite_2_ns_name = prepend_slash_if_not_null(satellite_2_ns_name)
@@ -55,15 +61,6 @@ def generate_launch_description():
 
     declared_arguments = []
 
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "prefix",
-            default_value="",
-            description="Prefix of the joint names, useful for \
-        multi-robot setup. If changed than also joint names in the controllers' configuration \
-        have to be updated.",
-        )
-    )
     declared_arguments.append(
         DeclareLaunchArgument(
             "use_mock_hardware",
@@ -140,7 +137,6 @@ def generate_launch_description():
     )
 
     # initialize arguments
-    prefix = LaunchConfiguration("prefix")
     use_mock_hardware = LaunchConfiguration("use_mock_hardware")
     control_node = LaunchConfiguration("control_node")
     listen_ip_address = LaunchConfiguration("listen_ip_address")
@@ -148,7 +144,37 @@ def generate_launch_description():
     log_level_driver = LaunchConfiguration("log_level_driver")
     log_level_all = LaunchConfiguration("log_level_all")
 
-    robot_description_content = Command(
+    robot_controllers = PathJoinSubstitution(
+        [
+            FindPackageShare("two_distributed_kukas_bringup"),
+            "controller_config",
+            "one_central_one_distributed.yaml",
+        ]
+    )
+
+    control_node = Node(
+        package="kuka_ros2_control_support",
+        executable=control_node,
+        output="both",
+        arguments=[
+            "--ros-args",
+            "--log-level",
+            ["KukaSystemPositionOnlyHardware:=", log_level_driver],
+            "--ros-args",
+            "--log-level",
+            log_level_all,
+        ],
+        parameters=[robot_controllers],
+    )
+
+    robot_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["position_trajectory_controller", "-c", "/controller_manager"],
+    )
+
+    # SUB 1
+    robot_satellite_1_description_content = Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
@@ -161,7 +187,10 @@ def generate_launch_description():
             ),
             " ",
             "prefix:=",
-            prefix,
+            satellite_1_ns_name + "_",
+            " ",
+            "origin:=",
+            '"0 0 0"',
             " ",
             "use_mock_hardware:=",
             use_mock_hardware,
@@ -182,65 +211,56 @@ def generate_launch_description():
             " ",
         ]
     )
-
-    robot_description = {"robot_description": robot_description_content}
-
-    robot_controllers = PathJoinSubstitution(
+    robot_satellite_1_description = {
+        "robot_description": robot_satellite_1_description_content
+    }
+    robot_controllers_satellite_1 = PathJoinSubstitution(
         [
             FindPackageShare("two_distributed_kukas_bringup"),
             "controller_config",
-            "main_controller.yaml",
+            "first_distributed_kuka_kr16_2_controller.yaml",
         ]
     )
 
-    control_node = Node(
-        package="kuka_ros2_control_support",
-        executable=control_node,
-        output="both",
-        arguments=[
-            "--ros-args",
-            "--log-level",
-            ["KukaSystemPositionOnlyHardware:=", log_level_driver],
-            "--ros-args",
-            "--log-level",
-            log_level_all,
+    sub_1_control_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        namespace=satellite_1_ns_name,
+        parameters=[robot_satellite_1_description, robot_controllers_satellite_1],
+        remappings=[
+            (
+                "/forward_position_controller/commands",
+                "/position_commands",
+            ),
+            ("/joint_states", slash_satellite_1_ns_name + "/joint_states"),
+            (
+                "/dynamic_joint_states",
+                slash_satellite_1_ns_name + "/dynamic_joint_states",
+            ),
         ],
-        parameters=[robot_description, robot_controllers],
+        output="both",
     )
 
-    robot_state_pub_node = Node(
+    robot_state_pub_node_1 = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
-        parameters=[robot_description],
+        namespace=satellite_1_ns_name,
         output="both",
+        parameters=[robot_satellite_1_description],
     )
 
-    joint_state_broadcaster_spawner = Node(
+    joint_state_broadcaster_spawner_1 = Node(
         package="controller_manager",
         executable="spawner",
+        namespace=satellite_1_ns_name,
         arguments=[
             "joint_state_broadcaster",
-            "--controller-manager",
-            "/controller_manager",
+            "-c",
+            satellite_1_controller_manager_name,
         ],
     )
 
-    robot_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["position_trajectory_controller", "-c", "/controller_manager"],
-    )
-
-    delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = (
-        RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=joint_state_broadcaster_spawner,
-                on_exit=[robot_controller_spawner],
-            )
-        )
-    )
-
-    # SUB 2
+    # SUB 1
     robot_satellite_2_description_content = Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
@@ -254,10 +274,10 @@ def generate_launch_description():
             ),
             " ",
             "prefix:=",
-            satellite_2_ns_name,
+            satellite_2_ns_name + "_",
             " ",
             "origin:=",
-            '"3 0 0"',
+            '"0 3 0"',
             " ",
             "use_mock_hardware:=",
             use_mock_hardware,
@@ -279,7 +299,7 @@ def generate_launch_description():
         ]
     )
     robot_satellite_2_description = {
-        "robot_description": robot_satellite_2_description_content
+        "robot_description": robot_satellite_1_description_content
     }
     robot_controllers_satellite_2 = PathJoinSubstitution(
         [
@@ -327,17 +347,6 @@ def generate_launch_description():
         ],
     )
 
-    robot_controller_spawner_2 = Node(
-        package="controller_manager",
-        executable="spawner",
-        namespace=satellite_2_ns_name,
-        arguments=[
-            "forward_position_controller",
-            "-c",
-            satellite_2_controller_manager_name,
-        ],
-    )
-
     # RVIZ
 
     rviz_config_file = PathJoinSubstitution(
@@ -358,15 +367,26 @@ def generate_launch_description():
 
     delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
-            target_action=joint_state_broadcaster_spawner_2,
+            target_action=joint_state_broadcaster_spawner_1,
             on_exit=[rviz_node],
+        )
+    )
+
+    # Joint state broadcaster
+    delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = (
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=joint_state_broadcaster_spawner_2,
+                on_exit=[robot_controller_spawner],
+            )
         )
     )
 
     nodes = [
         control_node,
-        robot_state_pub_node,
-        joint_state_broadcaster_spawner,
+        sub_1_control_node,
+        robot_state_pub_node_1,
+        joint_state_broadcaster_spawner_1,
         sub_2_control_node,
         robot_state_pub_node_2,
         joint_state_broadcaster_spawner_2,

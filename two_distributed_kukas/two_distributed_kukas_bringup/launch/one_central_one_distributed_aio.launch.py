@@ -189,7 +189,7 @@ def generate_launch_description():
         [
             FindPackageShare("two_distributed_kukas_bringup"),
             "controller_config",
-            "one_central_one_distributed.yaml",
+            "one_central_one_distributed_aio.yaml",
         ]
     )
 

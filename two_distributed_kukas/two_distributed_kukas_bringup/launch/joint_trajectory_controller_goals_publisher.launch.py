@@ -32,6 +32,7 @@ def generate_launch_description():
             choices=[
                 "6dof_joint_trajectory_controller_goals.yaml",
                 "one_central_one_distributed_kuka_6dof_joint_trajectory_controller_goals.yaml",
+                "no_central_one_distributed_kuka_6dof_joint_trajectory_controller_goals.yaml",
                 "two_distributed_kukas_6dof_joint_trajectory_controller_goals.yaml",
             ],
         )
