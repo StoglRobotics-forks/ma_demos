@@ -88,7 +88,7 @@ def generate_launch_description():
         [
             FindPackageShare("two_distributed_kukas_bringup"),
             "controller_config",
-            "main_controller.yaml",
+            "no_central_robot_two_distributed_robots.yaml",
         ]
     )
 

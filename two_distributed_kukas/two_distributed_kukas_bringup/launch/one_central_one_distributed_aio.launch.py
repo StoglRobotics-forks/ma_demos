@@ -189,7 +189,7 @@ def generate_launch_description():
         [
             FindPackageShare("two_distributed_kukas_bringup"),
             "controller_config",
-            "one_central_one_distributed_aio.yaml",
+            "one_central_robot_one_distributed_robot.yaml",
         ]
     )
 
@@ -285,7 +285,7 @@ def generate_launch_description():
         [
             FindPackageShare("two_distributed_kukas_bringup"),
             "controller_config",
-            "first_distributed_kuka_kr16_2_controller.yaml",
+            "sub_1_controller.yaml",
         ]
     )
 

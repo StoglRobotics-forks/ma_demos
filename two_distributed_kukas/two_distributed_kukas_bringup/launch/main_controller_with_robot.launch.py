@@ -1,4 +1,4 @@
-# Copyright 2023 Stogl Robotics Consulting UG (haftungsbeschränkt)
+# Copyright 2021 Stogl Robotics Consulting UG (haftungsbeschränkt)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,55 +12,52 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, RegisterEventHandler
-from launch.event_handlers import OnProcessExit
+from launch.actions import DeclareLaunchArgument
 from launch.substitutions import (
     Command,
     FindExecutable,
-    LaunchConfiguration,
     PathJoinSubstitution,
+    LaunchConfiguration,
 )
 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
-def delete_direct_slash_duplicate(t):
-    if not (t[0] == "/" and t[1] == "/"):
-        return t[0]
-
-
-def prepend_slash_if_not_null(prefix):
-    if not prefix:
-        return ""
-    ns = "/" + prefix
-    # remove all occurrences of slashes that directly follow each other ("//Prefix/////Namespace//" -> "/Prefix/Namespace/")
-    return "".join(
-        filter(
-            lambda item: item is not None,
-            map(delete_direct_slash_duplicate, zip(ns, ns[1:] + " ")),
-        )
-    )
-
-
 def generate_launch_description():
-    controller_manager_name = "controller_manager"
-    slash_controller_manager_name = prepend_slash_if_not_null(controller_manager_name)
-
-    satellite_2_ns_name = "sub_2"
-    slash_satellite_2_ns_name = prepend_slash_if_not_null(satellite_2_ns_name)
-    satellite_2_controller_manager_name = (
-        slash_satellite_2_ns_name + slash_controller_manager_name
-    )
-
     declared_arguments = []
 
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "prefix",
+            default_value="",
+            description="Prefix of the joint names, useful for \
+        multi-robot setup. If changed than also joint names in the controllers' configuration \
+        have to be updated.",
+        )
+    )
     declared_arguments.append(
         DeclareLaunchArgument(
             "use_mock_hardware",
             default_value="false",
             description="Start robot with fake hardware mirroring command to its states.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "control_node",
+            default_value="ros2_control_node_max_update_rate",
+            description="Change the control node which is used.",
+            choices=[
+                "ros2_control_node",
+                "ros2_control_node_steady_clock",
+                "ros2_control_node_max_update_rate",
+                "ros2_control_node_max_update_rate_sc",
+                "ros2_control_node_fixed_period",
+                "ros2_control_node_fixed_period_sc",
+            ],
         )
     )
     declared_arguments.append(
@@ -115,23 +112,9 @@ def generate_launch_description():
             ],
         )
     )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "control_node",
-            default_value="ros2_control_node_max_update_rate",
-            description="Change the control node which is used.",
-            choices=[
-                "ros2_control_node",
-                "ros2_control_node_steady_clock",
-                "ros2_control_node_max_update_rate",
-                "ros2_control_node_max_update_rate_sc",
-                "ros2_control_node_fixed_period",
-                "ros2_control_node_fixed_period_sc",
-            ],
-        )
-    )
 
     # initialize arguments
+    prefix = LaunchConfiguration("prefix")
     use_mock_hardware = LaunchConfiguration("use_mock_hardware")
     control_node = LaunchConfiguration("control_node")
     listen_ip_address = LaunchConfiguration("listen_ip_address")
@@ -139,8 +122,7 @@ def generate_launch_description():
     log_level_driver = LaunchConfiguration("log_level_driver")
     log_level_all = LaunchConfiguration("log_level_all")
 
-    # SUB 1
-    robot_satellite_2_description_content = Command(
+    robot_description_content = Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
@@ -153,10 +135,7 @@ def generate_launch_description():
             ),
             " ",
             "prefix:=",
-            satellite_2_ns_name + "_",
-            " ",
-            "origin:=",
-            '"0 3 0"',
+            prefix,
             " ",
             "use_mock_hardware:=",
             use_mock_hardware,
@@ -177,22 +156,30 @@ def generate_launch_description():
             " ",
         ]
     )
-    robot_satellite_2_description = {
-        "robot_description": robot_satellite_2_description_content
-    }
-    robot_controllers_satellite_2 = PathJoinSubstitution(
+
+    robot_description = {"robot_description": robot_description_content}
+
+    # Get controller manager settings
+    main_robot_controllers = PathJoinSubstitution(
         [
             FindPackageShare("two_distributed_kukas_bringup"),
             "controller_config",
-            "sub_2_controller.yaml",
+            "one_central_robot_one_distributed_robot.yaml",
         ]
     )
 
-    sub_2_control_node = Node(
+    # MAIN CONTROLLER MANAGER
+    # Main controller manager node
+    main_control_node = Node(
         package="kuka_ros2_control_support",
         executable=control_node,
-        namespace=satellite_2_ns_name,
-        parameters=[robot_satellite_2_description, robot_controllers_satellite_2],
+        parameters=[robot_description, main_robot_controllers],
+        remappings=[
+            (
+                "/forward_position_controller/commands",
+                "/position_commands",
+            ),
+        ],
         arguments=[
             "--ros-args",
             "--log-level",
@@ -201,43 +188,30 @@ def generate_launch_description():
             "--log-level",
             log_level_all,
         ],
-        remappings=[
-            (
-                "/forward_position_controller/commands",
-                "/position_commands",
-            ),
-            ("/joint_states", slash_satellite_2_ns_name + "/joint_states"),
-            (
-                "/dynamic_joint_states",
-                slash_satellite_2_ns_name + "/dynamic_joint_states",
-            ),
-        ],
         output="both",
     )
 
-    robot_state_pub_node_2 = Node(
+    robot_state_pub_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
-        namespace=satellite_2_ns_name,
+        parameters=[robot_description],
         output="both",
-        parameters=[robot_satellite_2_description],
     )
 
-    joint_state_broadcaster_spawner_2 = Node(
+    joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        namespace=satellite_2_ns_name,
         arguments=[
             "joint_state_broadcaster",
-            "-c",
-            satellite_2_controller_manager_name,
+            "--controller-manager",
+            "/controller_manager",
         ],
     )
 
     nodes = [
-        sub_2_control_node,
-        robot_state_pub_node_2,
-        joint_state_broadcaster_spawner_2,
+        main_control_node,
+        robot_state_pub_node,
+        joint_state_broadcaster_spawner,
     ]
 
     return LaunchDescription(declared_arguments + nodes)

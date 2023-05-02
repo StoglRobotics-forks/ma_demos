@@ -64,6 +64,21 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
+            "control_node",
+            default_value="ros2_control_node_max_update_rate",
+            description="Change the control node which is used.",
+            choices=[
+                "ros2_control_node",
+                "ros2_control_node_steady_clock",
+                "ros2_control_node_max_update_rate",
+                "ros2_control_node_max_update_rate_sc",
+                "ros2_control_node_fixed_period",
+                "ros2_control_node_fixed_period_sc",
+            ],
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
             "listen_ip_address",
             default_value="172.20.19.101",
             description="The ip address on of your device on which is listend.",
@@ -116,17 +131,9 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "control_node",
-            default_value="ros2_control_node_max_update_rate",
-            description="Change the control node which is used.",
-            choices=[
-                "ros2_control_node",
-                "ros2_control_node_steady_clock",
-                "ros2_control_node_max_update_rate",
-                "ros2_control_node_max_update_rate_sc",
-                "ros2_control_node_fixed_period",
-                "ros2_control_node_fixed_period_sc",
-            ],
+            '"0 0 0"',
+            default_value="origin",
+            description="Change the robots origin.",
         )
     )
 
@@ -137,6 +144,7 @@ def generate_launch_description():
     listen_port = LaunchConfiguration("listen_port")
     log_level_driver = LaunchConfiguration("log_level_driver")
     log_level_all = LaunchConfiguration("log_level_all")
+    origin = LaunchConfiguration("origin")
 
     # SUB 1
     robot_satellite_1_description_content = Command(
@@ -155,7 +163,7 @@ def generate_launch_description():
             satellite_1_ns_name + "_",
             " ",
             "origin:=",
-            '"0 0 0"',
+            origin,
             " ",
             "use_mock_hardware:=",
             use_mock_hardware,
@@ -183,7 +191,7 @@ def generate_launch_description():
         [
             FindPackageShare("two_distributed_kukas_bringup"),
             "controller_config",
-            "first_distributed_kuka_kr16_2_controller.yaml",
+            "sub_1_controller.yaml",
         ]
     )
 
