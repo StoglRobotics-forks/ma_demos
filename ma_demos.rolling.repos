@@ -15,3 +15,7 @@ repositories:
     type: git
     url: git@github.com:StoglRobotics-forks/ros2_controllers.git
     version: distributed_control_poc
+  ros2_demos:
+    type: git
+    url: git@github.com:ros2/demos.git
+    version: rolling
