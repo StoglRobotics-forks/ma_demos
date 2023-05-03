@@ -15,9 +15,9 @@
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>joint_state_publisher_gui</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>ma_demos_launch_helpers</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>rviz2</exec_depend>
-  <exec_depend>two_distributed_rrbots_hw</exec_depend>
   <exec_depend>xacro</exec_depend>
 
   <export>

@@ -13,8 +13,7 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, RegisterEventHandler
-from launch.event_handlers import OnProcessExit
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import (
     Command,
     FindExecutable,
@@ -25,26 +24,10 @@ from launch.substitutions import (
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
-
-def delete_direct_slash_duplicate(t):
-    if not (t[0] == "/" and t[1] == "/"):
-        return t[0]
+from ma_demos_launch_helpers import prepend_slash_if_not_null, select_kuka_robot
 
 
-def prepend_slash_if_not_null(prefix):
-    if not prefix:
-        return ""
-    ns = "/" + prefix
-    # remove all occurrences of slashes that directly follow each other ("//Prefix/////Namespace//" -> "/Prefix/Namespace/")
-    return "".join(
-        filter(
-            lambda item: item is not None,
-            map(delete_direct_slash_duplicate, zip(ns, ns[1:] + " ")),
-        )
-    )
-
-
-def generate_launch_description():
+def create_nodes_to_launch(context, *args, **kwargs):
     controller_manager_name = "controller_manager"
     satellite_1_ns_name = "sub_1"
     slash_controller_manager_name = prepend_slash_if_not_null(controller_manager_name)
@@ -53,8 +36,134 @@ def generate_launch_description():
         slash_satellite_1_ns_name + slash_controller_manager_name
     )
 
+    # initialize arguments
+    robot = select_kuka_robot(LaunchConfiguration("robot_type").perform(context))
+    use_mock_hardware = LaunchConfiguration("use_mock_hardware")
+    control_node = LaunchConfiguration("control_node")
+    listen_ip_address = LaunchConfiguration("listen_ip_address")
+    listen_port = LaunchConfiguration("listen_port")
+    log_level_driver = LaunchConfiguration("log_level_driver")
+    log_level_all = LaunchConfiguration("log_level_all")
+    origin = LaunchConfiguration("origin")
+
+    # SUB 1
+    robot_satellite_1_description_content = Command(
+        [
+            PathJoinSubstitution([FindExecutable(name="xacro")]),
+            " ",
+            PathJoinSubstitution(
+                [
+                    FindPackageShare("kuka_ros2_control_support"),
+                    "urdf",
+                    "common_kuka.xacro",
+                ]
+            ),
+            " ",
+            "prefix:=",
+            satellite_1_ns_name + "_",
+            " ",
+            "origin:=",
+            origin,
+            " ",
+            "use_mock_hardware:=",
+            use_mock_hardware,
+            " ",
+            "controllers_file:=kuka_6dof_controllers.yaml",
+            " ",
+            "robot_description_package:=",
+            robot["robot_description_package"],
+            " ",
+            "robot_description_macro_file:=",
+            robot["robot_description_macro_file"],
+            " ",
+            "robot_name:=",
+            robot["robot_name"],
+            " ",
+            "listen_ip_address:=",
+            listen_ip_address,
+            " ",
+            "listen_port:=",
+            listen_port,
+            " ",
+        ]
+    )
+    robot_satellite_1_description = {
+        "robot_description": robot_satellite_1_description_content
+    }
+    robot_controllers_satellite_1 = PathJoinSubstitution(
+        [
+            FindPackageShare("two_distributed_kukas_bringup"),
+            "controller_config",
+            "sub_1_controller.yaml",
+        ]
+    )
+
+    sub_1_control_node = Node(
+        package="kuka_ros2_control_support",
+        executable=control_node,
+        namespace=satellite_1_ns_name,
+        parameters=[robot_satellite_1_description, robot_controllers_satellite_1],
+        arguments=[
+            "--ros-args",
+            "--log-level",
+            ["KukaSystemPositionOnlyHardware:=", log_level_driver],
+            "--ros-args",
+            "--log-level",
+            log_level_all,
+        ],
+        remappings=[
+            (
+                "/forward_position_controller/commands",
+                "/position_commands",
+            ),
+            ("/joint_states", slash_satellite_1_ns_name + "/joint_states"),
+            (
+                "/dynamic_joint_states",
+                slash_satellite_1_ns_name + "/dynamic_joint_states",
+            ),
+        ],
+        output="both",
+    )
+
+    robot_state_pub_node_1 = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        namespace=satellite_1_ns_name,
+        output="both",
+        parameters=[robot_satellite_1_description],
+    )
+
+    joint_state_broadcaster_spawner_1 = Node(
+        package="controller_manager",
+        executable="spawner",
+        namespace=satellite_1_ns_name,
+        arguments=[
+            "joint_state_broadcaster",
+            "-c",
+            satellite_1_controller_manager_name,
+        ],
+    )
+
+    nodes = [
+        sub_1_control_node,
+        robot_state_pub_node_1,
+        joint_state_broadcaster_spawner_1,
+    ]
+
+    return nodes
+
+
+def generate_launch_description():
     declared_arguments = []
 
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "robot_type",
+            default_value="kuka_kr5",
+            description="The robot which should be launched.",
+            choices=["kuka_kr5", "kuka_kr16_2"],
+        )
+    )
     declared_arguments.append(
         DeclareLaunchArgument(
             "use_mock_hardware",
@@ -131,120 +240,12 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            '"0 0 0"',
-            default_value="origin",
+            "origin",
+            default_value='"0 0 0"',
             description="Change the robots origin.",
         )
     )
 
-    # initialize arguments
-    use_mock_hardware = LaunchConfiguration("use_mock_hardware")
-    control_node = LaunchConfiguration("control_node")
-    listen_ip_address = LaunchConfiguration("listen_ip_address")
-    listen_port = LaunchConfiguration("listen_port")
-    log_level_driver = LaunchConfiguration("log_level_driver")
-    log_level_all = LaunchConfiguration("log_level_all")
-    origin = LaunchConfiguration("origin")
-
-    # SUB 1
-    robot_satellite_1_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
-            " ",
-            PathJoinSubstitution(
-                [
-                    FindPackageShare("kuka_ros2_control_support"),
-                    "urdf",
-                    "common_kuka.xacro",
-                ]
-            ),
-            " ",
-            "prefix:=",
-            satellite_1_ns_name + "_",
-            " ",
-            "origin:=",
-            origin,
-            " ",
-            "use_mock_hardware:=",
-            use_mock_hardware,
-            " ",
-            "controllers_file:=kuka_6dof_controllers.yaml",
-            " ",
-            "robot_description_package:=kuka_kr16_support",
-            " ",
-            "robot_description_macro_file:=kr16_2_macro.xacro",
-            " ",
-            "robot_name:=kuka_kr16_2",
-            " ",
-            "listen_ip_address:=",
-            listen_ip_address,
-            " ",
-            "listen_port:=",
-            listen_port,
-            " ",
-        ]
+    return LaunchDescription(
+        declared_arguments + [OpaqueFunction(function=create_nodes_to_launch)]
     )
-    robot_satellite_1_description = {
-        "robot_description": robot_satellite_1_description_content
-    }
-    robot_controllers_satellite_1 = PathJoinSubstitution(
-        [
-            FindPackageShare("two_distributed_kukas_bringup"),
-            "controller_config",
-            "sub_1_controller.yaml",
-        ]
-    )
-
-    sub_1_control_node = Node(
-        package="kuka_ros2_control_support",
-        executable=control_node,
-        namespace=satellite_1_ns_name,
-        parameters=[robot_satellite_1_description, robot_controllers_satellite_1],
-        arguments=[
-            "--ros-args",
-            "--log-level",
-            ["KukaSystemPositionOnlyHardware:=", log_level_driver],
-            "--ros-args",
-            "--log-level",
-            log_level_all,
-        ],
-        remappings=[
-            (
-                "/forward_position_controller/commands",
-                "/position_commands",
-            ),
-            ("/joint_states", slash_satellite_1_ns_name + "/joint_states"),
-            (
-                "/dynamic_joint_states",
-                slash_satellite_1_ns_name + "/dynamic_joint_states",
-            ),
-        ],
-        output="both",
-    )
-
-    robot_state_pub_node_1 = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        namespace=satellite_1_ns_name,
-        output="both",
-        parameters=[robot_satellite_1_description],
-    )
-
-    joint_state_broadcaster_spawner_1 = Node(
-        package="controller_manager",
-        executable="spawner",
-        namespace=satellite_1_ns_name,
-        arguments=[
-            "joint_state_broadcaster",
-            "-c",
-            satellite_1_controller_manager_name,
-        ],
-    )
-
-    nodes = [
-        sub_1_control_node,
-        robot_state_pub_node_1,
-        joint_state_broadcaster_spawner_1,
-    ]
-
-    return LaunchDescription(declared_arguments + nodes)

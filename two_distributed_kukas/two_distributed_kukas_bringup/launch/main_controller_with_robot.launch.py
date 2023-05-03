@@ -14,7 +14,7 @@
 
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import (
     Command,
     FindExecutable,
@@ -24,6 +24,117 @@ from launch.substitutions import (
 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+
+from ma_demos_launch_helpers import select_kuka_robot
+
+
+def create_nodes_to_launch(context, *args, **kwargs):
+    # initialize arguments
+    prefix = LaunchConfiguration("prefix")
+    robot = select_kuka_robot(LaunchConfiguration("robot_type").perform(context))
+    use_mock_hardware = LaunchConfiguration("use_mock_hardware")
+    control_node = LaunchConfiguration("control_node")
+    listen_ip_address = LaunchConfiguration("listen_ip_address")
+    listen_port = LaunchConfiguration("listen_port")
+    log_level_driver = LaunchConfiguration("log_level_driver")
+    log_level_all = LaunchConfiguration("log_level_all")
+
+    robot_description_content = Command(
+        [
+            PathJoinSubstitution([FindExecutable(name="xacro")]),
+            " ",
+            PathJoinSubstitution(
+                [
+                    FindPackageShare("kuka_ros2_control_support"),
+                    "urdf",
+                    "common_kuka.xacro",
+                ]
+            ),
+            " ",
+            "prefix:=",
+            prefix,
+            " ",
+            "use_mock_hardware:=",
+            use_mock_hardware,
+            " ",
+            "controllers_file:=kuka_6dof_controllers.yaml",
+            " ",
+            "robot_description_package:=",
+            robot["robot_description_package"],
+            " ",
+            "robot_description_macro_file:=",
+            robot["robot_description_macro_file"],
+            " ",
+            "robot_name:=",
+            robot["robot_name"],
+            " ",
+            "listen_ip_address:=",
+            listen_ip_address,
+            " ",
+            "listen_port:=",
+            listen_port,
+            " ",
+        ]
+    )
+
+    robot_description = {"robot_description": robot_description_content}
+
+    # Get controller manager settings
+    main_robot_controllers = PathJoinSubstitution(
+        [
+            FindPackageShare("two_distributed_kukas_bringup"),
+            "controller_config",
+            "one_central_robot_one_distributed_robot.yaml",
+        ]
+    )
+
+    # MAIN CONTROLLER MANAGER
+    # Main controller manager node
+    main_control_node = Node(
+        package="kuka_ros2_control_support",
+        executable=control_node,
+        parameters=[robot_description, main_robot_controllers],
+        remappings=[
+            (
+                "/forward_position_controller/commands",
+                "/position_commands",
+            ),
+        ],
+        arguments=[
+            "--ros-args",
+            "--log-level",
+            ["KukaSystemPositionOnlyHardware:=", log_level_driver],
+            "--ros-args",
+            "--log-level",
+            log_level_all,
+        ],
+        output="both",
+    )
+
+    robot_state_pub_node = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        parameters=[robot_description],
+        output="both",
+    )
+
+    joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            "joint_state_broadcaster",
+            "--controller-manager",
+            "/controller_manager",
+        ],
+    )
+
+    nodes = [
+        main_control_node,
+        robot_state_pub_node,
+        joint_state_broadcaster_spawner,
+    ]
+
+    return nodes
 
 
 def generate_launch_description():
@@ -36,6 +147,14 @@ def generate_launch_description():
             description="Prefix of the joint names, useful for \
         multi-robot setup. If changed than also joint names in the controllers' configuration \
         have to be updated.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "robot_type",
+            default_value="kuka_kr5",
+            description="The robot which should be launched.",
+            choices=["kuka_kr5", "kuka_kr16_2"],
         )
     )
     declared_arguments.append(
@@ -113,105 +232,6 @@ def generate_launch_description():
         )
     )
 
-    # initialize arguments
-    prefix = LaunchConfiguration("prefix")
-    use_mock_hardware = LaunchConfiguration("use_mock_hardware")
-    control_node = LaunchConfiguration("control_node")
-    listen_ip_address = LaunchConfiguration("listen_ip_address")
-    listen_port = LaunchConfiguration("listen_port")
-    log_level_driver = LaunchConfiguration("log_level_driver")
-    log_level_all = LaunchConfiguration("log_level_all")
-
-    robot_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
-            " ",
-            PathJoinSubstitution(
-                [
-                    FindPackageShare("kuka_ros2_control_support"),
-                    "urdf",
-                    "common_kuka.xacro",
-                ]
-            ),
-            " ",
-            "prefix:=",
-            prefix,
-            " ",
-            "use_mock_hardware:=",
-            use_mock_hardware,
-            " ",
-            "controllers_file:=kuka_6dof_controllers.yaml",
-            " ",
-            "robot_description_package:=kuka_kr16_support",
-            " ",
-            "robot_description_macro_file:=kr16_2_macro.xacro",
-            " ",
-            "robot_name:=kuka_kr16_2",
-            " ",
-            "listen_ip_address:=",
-            listen_ip_address,
-            " ",
-            "listen_port:=",
-            listen_port,
-            " ",
-        ]
+    return LaunchDescription(
+        declared_arguments + [OpaqueFunction(function=create_nodes_to_launch)]
     )
-
-    robot_description = {"robot_description": robot_description_content}
-
-    # Get controller manager settings
-    main_robot_controllers = PathJoinSubstitution(
-        [
-            FindPackageShare("two_distributed_kukas_bringup"),
-            "controller_config",
-            "one_central_robot_one_distributed_robot.yaml",
-        ]
-    )
-
-    # MAIN CONTROLLER MANAGER
-    # Main controller manager node
-    main_control_node = Node(
-        package="kuka_ros2_control_support",
-        executable=control_node,
-        parameters=[robot_description, main_robot_controllers],
-        remappings=[
-            (
-                "/forward_position_controller/commands",
-                "/position_commands",
-            ),
-        ],
-        arguments=[
-            "--ros-args",
-            "--log-level",
-            ["KukaSystemPositionOnlyHardware:=", log_level_driver],
-            "--ros-args",
-            "--log-level",
-            log_level_all,
-        ],
-        output="both",
-    )
-
-    robot_state_pub_node = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        parameters=[robot_description],
-        output="both",
-    )
-
-    joint_state_broadcaster_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "joint_state_broadcaster",
-            "--controller-manager",
-            "/controller_manager",
-        ],
-    )
-
-    nodes = [
-        main_control_node,
-        robot_state_pub_node,
-        joint_state_broadcaster_spawner,
-    ]
-
-    return LaunchDescription(declared_arguments + nodes)
