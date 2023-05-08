@@ -1,4 +1,8 @@
 repositories:
+  control_msgs:
+    type: git
+    url: git@github.com:ros-controls/control_msgs.git
+    version: master
   kuka_experimental:
     type: git
     url: git@github.com:StoglRobotics-forks/kuka_experimental.git
