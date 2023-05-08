@@ -6,5 +6,11 @@
     use_multiple_nodes: true
     distributed_interfaces_publish_period: 12
 
+    export_state_interfaces:
+      - "sub_1_joint1/position"
+    
+    export_command_interfaces:
+      - "sub_1_joint1/position"
+
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
