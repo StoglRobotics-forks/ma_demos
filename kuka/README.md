@@ -46,7 +46,7 @@ On the robot:
  Given the chain: `ForwardCommandController--->JointTrajectoryController--->Hardware`:  
  1. **First** load: ForwardCommandController, **Second** load: JointTrajectoryController.   
 
-    _This is due the fact, that controllers are activated in the order they have been loaded._
+    _This is due the fact, that the controller manager calls controllers in the order they have been loaded._
  2. **First** activate: JointTrajectoryController, **Second** activate: ForwardCommandController.  
 
     _This is due the fact, that only after activation of the previous controller in the chain this controllers reference interfaces are exported. And they can only be claimed after they have been created._
