@@ -1,17 +1,25 @@
 repositories:
+  control_msgs:
+    type: git
+    url: git@github.com:ros-controls/control_msgs.git
+    version: master
+  kuka_experimental:
+    type: git
+    url: git@github.com:StoglRobotics-forks/kuka_experimental.git
+    version: concept_testing
   ma_demos:
     type: git
-    url: git@github.com:mamueluth/ma_demos.git
+    url: git@github.com:StoglRobotics-forks/ma_demos.git
     version: main
   ros2_control:
     type: git
-    url: git@github.com:mamueluth/ros2_control.git
-    version: distributed_control_poc
-  ros2_control_kuka_driver:
-    type: git
-    url: git@github.com:StoglRobotics-forks/ros2_control_kuka_driver.git
-    version: add_kuka_kr16_controllers
+    url: git@github.com:StoglRobotics-forks/ros2_control.git
+    version: distributed_control_base
   ros2_controllers:
     type: git
-    url: git@github.com:mamueluth/ros2_controllers.git
+    url: git@github.com:StoglRobotics-forks/ros2_controllers.git
     version: distributed_control_poc
+  ros2_demos:
+    type: git
+    url: git@github.com:ros2/demos.git
+    version: rolling

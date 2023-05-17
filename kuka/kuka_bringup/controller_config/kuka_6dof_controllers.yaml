@@ -1,9 +1,5 @@
 controller_manager:
   ros__parameters:
-    update_rate: 10  # Hz
-    distributed: true
-    sub_controller_manager: false # false -> is centralized controller.
-
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
@@ -13,34 +9,50 @@ controller_manager:
     position_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
+    fpc_jtc_chain_controller:
+      type: forward_command_controller/ForwardCommandController
+
+fpc_jtc_chain_controller:
+  ros__parameters:
+    joints:
+      - position_trajectory_controller/joint_a1
+      - position_trajectory_controller/joint_a2
+      - position_trajectory_controller/joint_a3
+      - position_trajectory_controller/joint_a4
+      - position_trajectory_controller/joint_a5
+      - position_trajectory_controller/joint_a6
+    interface_name: position
+
 
 forward_position_controller:
   ros__parameters:
     joints:
-      - joint1
-      - joint2
-      - /sub_1/sub_1_joint1
-      - /sub_2/sub_2_joint1
-      - /sub_2/sub_2_joint2
+      - joint_a1
+      - joint_a2
+      - joint_a3
+      - joint_a4
+      - joint_a5
+      - joint_a6
     interface_name: position
-
 
 position_trajectory_controller:
   ros__parameters:
     joints:
-      - joint1
-      - joint2
-      - /sub_1/sub_1_joint1
-      - /sub_2/sub_2_joint1
-      - /sub_2/sub_2_joint2
+      - joint_a1
+      - joint_a2
+      - joint_a3
+      - joint_a4
+      - joint_a5
+      - joint_a6
+
     command_interfaces:
       - position
 
     state_interfaces:
       - position
 
-    state_publish_rate: 200.0 # Defaults to 50
-    action_monitor_rate: 20.0 # Defaults to 20
+    state_publish_rate: 2.0 # Defaults to 50
+    action_monitor_rate: 2.0 # Defaults to 20
 
     allow_partial_joints_goal: false # Defaults to false
     open_loop_control: true
