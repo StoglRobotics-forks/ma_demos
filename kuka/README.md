@@ -40,3 +40,18 @@ On the robot:
 1. select program to run (e.g. ros_rsi_101) -> press _Anwählen_
 2. Press the run button and then in the terminal start the rsi:
     TODO
+
+# Chained JTC
+ For chained controllers the controllers have to be loaded in order they are chained, starting from the last controller in the chain. For the activation it's the other way around, starting from the hardware-side. Example:    
+ Given the chain: `ForwardCommandController--->JointTrajectoryController--->Hardware`:  
+ 1. **First** load: ForwardCommandController, **Second** load: JointTrajectoryController.   
+
+    _This is due the fact, that the controller manager calls controllers in the order they have been loaded._
+ 2. **First** activate: JointTrajectoryController, **Second** activate: ForwardCommandController.  
+
+    _This is due the fact, that only after activation of the previous controller in the chain this controllers reference interfaces are exported. And they can only be claimed after they have been created._
+
+ You can have a look at the: `ma_demos/kuka/kuka_bringup/launch/kuka_kr5_chained_jtc.launch.py`.
+
+
+ 
