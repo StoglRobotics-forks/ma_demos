@@ -1,0 +1,20 @@
+controller_manager:
+  ros__parameters:
+    central_controller_manager: true
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    fpc_jtc_chain_controller:
+      type: forward_command_controller/ForwardCommandController
+
+fpc_jtc_chain_controller:
+  ros__parameters:
+    joints:
+      - position_trajectory_controller/joint_a1
+      - position_trajectory_controller/joint_a2
+      - position_trajectory_controller/joint_a3
+      - position_trajectory_controller/joint_a4
+      - position_trajectory_controller/joint_a5
+      - position_trajectory_controller/joint_a6
+    interface_name: position
