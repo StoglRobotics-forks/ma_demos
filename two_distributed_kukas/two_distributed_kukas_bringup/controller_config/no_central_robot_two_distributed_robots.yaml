@@ -1,7 +1,6 @@
 controller_manager:
   ros__parameters:
-    distributed: true
-    sub_controller_manager: false # false -> is centralized controller.
+    central_controller_manager: true
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster

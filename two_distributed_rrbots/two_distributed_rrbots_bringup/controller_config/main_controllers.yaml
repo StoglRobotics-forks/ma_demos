@@ -1,8 +1,7 @@
 controller_manager:
   ros__parameters:
     update_rate: 10  # Hz
-    distributed: true
-    sub_controller_manager: false # false -> is centralized controller.
+    central_controller_manager: true
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
