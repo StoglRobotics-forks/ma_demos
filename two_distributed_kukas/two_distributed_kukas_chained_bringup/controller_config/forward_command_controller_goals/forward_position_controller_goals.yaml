@@ -1,6 +1,6 @@
 publisher_forward_position_controller:
   ros__parameters:
-    publish_topic: "/forward_position_controller/commands"
+    publish_topic: "/fpc_jtc_chain_controller/commands"
     wait_sec_between_publish: 5
 
     goal_names: ["pos1", "pos2", "pos3", "pos4"]

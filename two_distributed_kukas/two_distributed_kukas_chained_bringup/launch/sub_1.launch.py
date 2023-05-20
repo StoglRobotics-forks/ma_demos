@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, OpaqueFunction, RegisterEventHandler
+from launch.event_handlers import OnProcessExit
 from launch.substitutions import (
     Command,
     FindExecutable,
@@ -144,10 +145,26 @@ def create_nodes_to_launch(context, *args, **kwargs):
         ],
     )
 
+    robot_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["position_trajectory_controller", "-c", "/sub_1/controller_manager"],
+    )
+
+    delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = (
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=joint_state_broadcaster_spawner_1,
+                on_exit=[robot_controller_spawner],
+            )
+        )
+    )
+
     nodes = [
         sub_1_control_node,
         robot_state_pub_node_1,
         joint_state_broadcaster_spawner_1,
+        delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
     ]
 
     return nodes

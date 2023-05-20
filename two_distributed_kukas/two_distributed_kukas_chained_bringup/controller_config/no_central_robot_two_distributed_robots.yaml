@@ -11,10 +11,10 @@ controller_manager:
 fpc_jtc_chain_controller:
   ros__parameters:
     joints:
-      - position_trajectory_controller/joint_a1
-      - position_trajectory_controller/joint_a2
-      - position_trajectory_controller/joint_a3
-      - position_trajectory_controller/joint_a4
-      - position_trajectory_controller/joint_a5
-      - position_trajectory_controller/joint_a6
+      - /sub_1/position_trajectory_controller/sub_1_joint_a1
+      - /sub_1/position_trajectory_controller/sub_1_joint_a2
+      - /sub_1/position_trajectory_controller/sub_1_joint_a3
+      - /sub_1/position_trajectory_controller/sub_1_joint_a4
+      - /sub_1/position_trajectory_controller/sub_1_joint_a5
+      - /sub_1/position_trajectory_controller/sub_1_joint_a6
     interface_name: position
