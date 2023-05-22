@@ -1,7 +1,6 @@
 /sub_1/controller_manager:
   ros__parameters:
     update_rate: 10  # Hz
-    distributed: true
     sub_controller_manager: true
     use_multiple_nodes: true
     distributed_interfaces_publish_period: 12

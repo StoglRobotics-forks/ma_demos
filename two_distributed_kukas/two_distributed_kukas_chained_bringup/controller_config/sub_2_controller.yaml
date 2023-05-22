@@ -1,6 +1,12 @@
-controller_manager:
+/sub_2/controller_manager:
   ros__parameters:
-    central_controller_manager: true
+    update_rate: 10  # Hz
+    sub_controller_manager: true
+    distributed_interfaces_publish_period: 12
+    export_command_interfaces:
+      - ""
+    export_state_interfaces:
+      - ""
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -8,21 +14,15 @@ controller_manager:
     position_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
-position_trajectory_controller:
+/sub_2/position_trajectory_controller:
   ros__parameters:
     joints:
-      - joint_a1
-      - joint_a2
-      - joint_a3
-      - joint_a4
-      - joint_a5
-      - joint_a6
-      - /sub_1/sub_1_joint_a1
-      - /sub_1/sub_1_joint_a2
-      - /sub_1/sub_1_joint_a3
-      - /sub_1/sub_1_joint_a4
-      - /sub_1/sub_1_joint_a5
-      - /sub_1/sub_1_joint_a6
+      - sub_2_joint_a1
+      - sub_2_joint_a2
+      - sub_2_joint_a3
+      - sub_2_joint_a4
+      - sub_2_joint_a5
+      - sub_2_joint_a6
 
     command_interfaces:
       - position
