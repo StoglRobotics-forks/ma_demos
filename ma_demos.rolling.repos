@@ -14,11 +14,11 @@ repositories:
   ros2_control:
     type: git
     url: git@github.com:StoglRobotics-forks/ros2_control.git
-    version: distributed_control_base
+    version: distributed_control_aio
   ros2_controllers:
     type: git
     url: git@github.com:StoglRobotics-forks/ros2_controllers.git
-    version: distributed_control_poc
+    version: distributed_control_aio
   ros2_demos:
     type: git
     url: git@github.com:ros2/demos.git
