@@ -148,7 +148,11 @@ def create_nodes_to_launch(context, *args, **kwargs):
     robot_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["position_trajectory_controller", "-c", "/sub_1/controller_manager"],
+        arguments=[
+            "position_trajectory_controller",
+            "-c",
+            slash_satellite_1_ns_name + "/controller_manager",
+        ],
     )
 
     delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = (

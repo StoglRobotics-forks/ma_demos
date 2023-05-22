@@ -2,7 +2,7 @@
   ros__parameters:
     update_rate: 10  # Hz
     sub_controller_manager: true
-    distributed_interfaces_publish_period: 12
+    distributed_interfaces_publish_period: 4
     export_command_interfaces:
       - ""
     export_state_interfaces:

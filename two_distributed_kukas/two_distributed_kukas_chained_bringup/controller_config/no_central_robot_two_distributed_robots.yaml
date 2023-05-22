@@ -17,4 +17,10 @@ fpc_jtc_chain_controller:
       - /sub_1/position_trajectory_controller/sub_1_joint_a4
       - /sub_1/position_trajectory_controller/sub_1_joint_a5
       - /sub_1/position_trajectory_controller/sub_1_joint_a6
+      - /sub_2/position_trajectory_controller/sub_2_joint_a1
+      - /sub_2/position_trajectory_controller/sub_2_joint_a2
+      - /sub_2/position_trajectory_controller/sub_2_joint_a3
+      - /sub_2/position_trajectory_controller/sub_2_joint_a4
+      - /sub_2/position_trajectory_controller/sub_2_joint_a5
+      - /sub_2/position_trajectory_controller/sub_2_joint_a6
     interface_name: position

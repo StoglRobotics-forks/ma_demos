@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, OpaqueFunction, RegisterEventHandler
+from launch.event_handlers import OnProcessExit
 from launch.substitutions import (
     Command,
     FindExecutable,
@@ -29,9 +30,8 @@ from ma_demos_launch_helpers import prepend_slash_if_not_null, select_kuka_robot
 
 def create_nodes_to_launch(context, *args, **kwargs):
     controller_manager_name = "controller_manager"
-    slash_controller_manager_name = prepend_slash_if_not_null(controller_manager_name)
-
     satellite_2_ns_name = "sub_2"
+    slash_controller_manager_name = prepend_slash_if_not_null(controller_manager_name)
     slash_satellite_2_ns_name = prepend_slash_if_not_null(satellite_2_ns_name)
     satellite_2_controller_manager_name = (
         slash_satellite_2_ns_name + slash_controller_manager_name
@@ -144,17 +144,36 @@ def create_nodes_to_launch(context, *args, **kwargs):
         ],
     )
 
+    robot_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            "position_trajectory_controller",
+            "-c",
+            slash_satellite_2_ns_name + "/controller_manager",
+        ],
+    )
+
+    delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = (
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=joint_state_broadcaster_spawner_2,
+                on_exit=[robot_controller_spawner],
+            )
+        )
+    )
+
     nodes = [
         sub_2_control_node,
         robot_state_pub_node_2,
         joint_state_broadcaster_spawner_2,
+        delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
     ]
 
     return nodes
 
 
 def generate_launch_description():
-
     declared_arguments = []
 
     declared_arguments.append(
@@ -170,6 +189,21 @@ def generate_launch_description():
             "use_mock_hardware",
             default_value="false",
             description="Start robot with fake hardware mirroring command to its states.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "control_node",
+            default_value="ros2_control_node_max_update_rate",
+            description="Change the control node which is used.",
+            choices=[
+                "ros2_control_node",
+                "ros2_control_node_steady_clock",
+                "ros2_control_node_max_update_rate",
+                "ros2_control_node_max_update_rate_sc",
+                "ros2_control_node_fixed_period",
+                "ros2_control_node_fixed_period_sc",
+            ],
         )
     )
     declared_arguments.append(
@@ -226,17 +260,9 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "control_node",
-            default_value="ros2_control_node_max_update_rate",
-            description="Change the control node which is used.",
-            choices=[
-                "ros2_control_node",
-                "ros2_control_node_steady_clock",
-                "ros2_control_node_max_update_rate",
-                "ros2_control_node_max_update_rate_sc",
-                "ros2_control_node_fixed_period",
-                "ros2_control_node_fixed_period_sc",
-            ],
+            "origin",
+            default_value='"0 0 0"',
+            description="Change the robots origin.",
         )
     )
 
