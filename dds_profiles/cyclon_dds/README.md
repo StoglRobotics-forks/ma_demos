@@ -6,9 +6,9 @@
 
 
 ## Short how to
-1. create a `.xml` file e.g. `profile.xml`
-2. configure
-3. Make the configuration visible: `export CYCLONEDDS_URI=file://$PWD/profile.xml`
+1. create a `.xml` file e.g. `example.xml`
+2. set configuration as wanted in the `.xml` file
+3. Make the configuration visible: `export CYCLONEDDS_URI=file://$PWD/example.xml`
 
 ## Explanation of the [`example.xml`](https://github.com/StoglRobotics-forks/ma_demos/tree/main/dds_profiles/cyclon_dds/example.xml)
 * `Interfaces` can be used to override the interfaces selected by default.

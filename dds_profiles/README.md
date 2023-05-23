@@ -11,7 +11,7 @@ Clone the ros2_demos project:
 | [eProsima **Fast DDS**](https://fast-dds.docs.eprosima.com/en/latest/)         | Apache 2                      | ``RMW_IMPLEMENTATION=rmw_fastrtps_cpp``      | Full support. **Default RMW**. Packaged with binary releases.| YES. out of the box|✓|
 | [Eclipse **Cyclone DDS**](https://projects.eclipse.org/projects/iot.cyclonedds)       | Eclipse Public License v2.0   | ``RMW_IMPLEMENTATION=rmw_cyclonedds_cpp``      | Full support. Packaged with binary releases. | YES. binary install |✓|
 | [RTI **Connext DDS**](https://www.rti.com/products)           | commercial, research          | ``RMW_IMPLEMENTATION=rmw_connextdds``      | Full support. Support included in binaries, but Connext installed separately. | YES. Need to install correct binary and license |✓|
-|[Eclipse **Zenoh**](https://zenoh.io/)  |?|?|?|?|✓|
+|[Eclipse **Zenoh**](https://zenoh.io/)  |?|-> `zenoh-bridge-dds -d <ROS_DOMAIN_ID> -f`|Creates uses dds bridge to create.|Not sure yet. Services seem to have an issue |✓|
 ||||||
 | [GurumNetworks **GurumDDS**](https://gurum.cc/index_eng)    | commercial                    |  Not working      | Community support. Support included in binaries, but GurumDDS installed separately. |NO. commercial license needed|X|
 
@@ -20,6 +20,7 @@ RTPS (a.k.a. DDSI-RTPS) is the wire protocol used by DDS to communicate over the
 In order to use a DDS/RTPS implementation with ROS 2, a “ROS Middleware interface” (a.k.a. rmw interface or just rmw) package needs to be created that implements the abstract ROS middleware interface using the DDS or RTPS implementation’s API and tools
 
 ## DDS Useful Resources:
+* Infos on the [DDS Discovery Server](https://docs.ros.org/en/rolling/Tutorials/Advanced/Discovery-Server/Discovery-Server.html)
 
 ### Different DDS vendors
 * [About different ROS 2 DDS/RTPS vendors](https://docs.ros.org/en/rolling/Concepts/About-Different-Middleware-Vendors.html) :  
@@ -48,18 +49,12 @@ In order to use a DDS/RTPS implementation with ROS 2, a “ROS Middleware interf
         Once you’ve installed a new DDS vendor, you can change the vendor used at runtime. Todo so set the environment variable: $ export RMW_IMPLEMENTATION=<rmw_version>
 
 ***
-##  eProsima fast DDS: [Documentation](https://fast-dds.docs.eprosima.com/en/latest/index.html) | [Repo](https://github.com/eProsima/Fast-DDS) | [ROS2-Repo](https://github.com/ros2/rmw_fastrtpsS)
+##  eProsima fast DDS: [Documentation](https://fast-dds.docs.eprosima.com/en/latest/index.html) | [Repo](https://github.com/eProsima/Fast-DDS) | [ROS2-Repo](https://github.com/ros2/rmw_fastrtps)
 
 
 ### Installation:
-How to instal is described [here](https://docs.ros.org/en/rolling/Installation/DDS-Implementations/Working-with-eProsima-Fast-DDS.html).
-
-### Setting different parameters
-* [How to set xml profiles](https://fast-dds.docs.eprosima.com/en/latest/fastdds/xml_configuration/xml_configuration.html#xml-profiles)
-* [Example how to set tcp as default](https://answers.ros.org/question/370595/ros2-foxy-nodes-cant-communicate-through-docker-container-border/)
-
-
-
+How to instal is described [here](https://docs.ros.org/en/rolling/Installation/DDS-Implementations/Working-with-eProsima-Fast-DDS.html):
+1. Is the default rmw, so should be installed by default
 
 ***
 ##  Eclipse Cyclone DDS: [Documentation](https://cyclonedds.io/docs/) | [Repo](https://github.com/eclipse-cyclonedds/cyclonedds)
@@ -67,12 +62,10 @@ How to instal is described [here](https://docs.ros.org/en/rolling/Installation/D
 
 ### Installation:
 How to instal is described [here](https://docs.ros.org/en/rolling/Installation/DDS-Implementations/Working-with-Eclipse-CycloneDDS.html).
-
-
-
+1. Install the binaries with : `sudo apt install ros-rolling-rmw-cyclonedds-cpp`
 
 ***
-##  RTI Connext DDS: [Documentation](https://community.rti.com/documentation)
+##  RTI Connext DDS: [Documentation](https://community.rti.com/documentation) | [ROS 2 Repo](https://github.com/ros2/rmw_connextdds)
 
 
 ### Installation:
