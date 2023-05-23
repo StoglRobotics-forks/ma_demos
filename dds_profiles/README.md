@@ -1,14 +1,19 @@
 # DDS in ROS2
-Overview of ros2 middlewares: (Rolling default is Fast DDS)
-
-| **Product name**          | **License**                   | **RMW implementation**    |**Status** | **Working?** |
-| :-------------------:     | :----------:                  | :----------------------: | :-------------: | :---: |
-| [eProsima **Fast DDS**](https://fast-dds.docs.eprosima.com/en/latest/)         | Apache 2                      | ``RMW_IMPLEMENTATION=rmw_fastrtps_cpp``      | Full support. **Default RMW**. Packaged with binary releases.| YES. out of the box|
-| [Eclipse **Cyclone DDS**](https://projects.eclipse.org/projects/iot.cyclonedds)       | Eclipse Public License v2.0   | ``RMW_IMPLEMENTATION=rmw_cyclonedds_cpp``      | Full support. Packaged with binary releases. | YES. binary install |
-| [RTI **Connext DDS**](https://www.rti.com/products)           | commercial, research          | ``RMW_IMPLEMENTATION=rmw_connextdds``      | Full support. Support included in binaries, but Connext installed separately. | YES. Need to install correct binary and license |
-|[Eclipse **Zenoh**](https://zenoh.io/)  |?|?|?|?|
+Simple testing:
+Clone the ros2_demos project:
+1. Open two terminal.
+2. Execute `RMW_IMPLEMENTATION=<rmw_implementation>` e.g.: `RMW_IMPLEMENTATION=rmw_cyclonedds_cpp`
+3. In the first terminal: `ros2 run demo_nodes_cpp talker`
+4. In the second terminal: `ros2 run demo_nodes_cpp listener`
+## Overview of ros2 middlewares: (Rolling default is Fast DDS)
+| **Product name**          | **License**                   | **RMW implementation**    |**Status** | **Working?** | **Testing**|
+| :-------------------:     | :----------:                  | :----------------------: | :-------------: | :---: |:---: |
+| [eProsima **Fast DDS**](https://fast-dds.docs.eprosima.com/en/latest/)         | Apache 2                      | ``RMW_IMPLEMENTATION=rmw_fastrtps_cpp``      | Full support. **Default RMW**. Packaged with binary releases.| YES. out of the box|✓|
+| [Eclipse **Cyclone DDS**](https://projects.eclipse.org/projects/iot.cyclonedds)       | Eclipse Public License v2.0   | ``RMW_IMPLEMENTATION=rmw_cyclonedds_cpp``      | Full support. Packaged with binary releases. | YES. binary install |✓|
+| [RTI **Connext DDS**](https://www.rti.com/products)           | commercial, research          | ``RMW_IMPLEMENTATION=rmw_connextdds``      | Full support. Support included in binaries, but Connext installed separately. | YES. Need to install correct binary and license |✓|
+|[Eclipse **Zenoh**](https://zenoh.io/)  |?|?|?|?|✓|
 ||||||
-| [GurumNetworks **GurumDDS**](https://gurum.cc/index_eng)    | commercial                    |  Not working      | Community support. Support included in binaries, but GurumDDS installed separately. |NO. commercial license needed|
+| [GurumNetworks **GurumDDS**](https://gurum.cc/index_eng)    | commercial                    |  Not working      | Community support. Support included in binaries, but GurumDDS installed separately. |NO. commercial license needed|X|
 
 RTPS (a.k.a. DDSI-RTPS) is the wire protocol used by DDS to communicate over the network.
 
@@ -79,6 +84,44 @@ How to instal is described [here](https://docs.ros.org/en/rolling/Installation/D
 
 
 
+***
+##  Eclipse Zenoh: [Documentation](https://zenoh.io/docs/getting-started/first-app/) | [Repo](https://github.com/eclipse-zenoh)
+### Installation:
+!!! Zenoh (zenohd) depends on systemd. However systemd is not present by default inside docker. So the following won't work out of the box. You first have to install systemd inside docker !!!
+How to instal is described [here](https://zenoh.io/blog/2021-04-28-ros2-integration/) or in more detail in the [github repo](https://github.com/eclipse-zenoh/zenoh-plugin-dds#How-to-install-it)
+1. `echo "deb [trusted=yes] https://download.eclipse.org/zenoh/debian-repo/ /" | sudo tee -a /etc/apt/sources.list > /dev/null`
+2. `sudo apt update`
+3. `sudo apt install zenoh zenoh-plugin-dds zenoh-bridge-dds`.
+
+### Quick Test
+### _1 host, 2 ROS domains_
+For a quick test on a single host, you can run the `turtlesim_node` and the `turtle_teleop_key` on distinct ROS domains. As soon as you run 2 `zenoh-bridge-dds` (1 per domain) the `turtle_teleop_key` can drive the `turtlesim_node`.  
+Here are the commands to run:
+  - `ROS_DOMAIN_ID=1 ros2 run turtlesim turtlesim_node`
+  - `ROS_DOMAIN_ID=2 ros2 run turtlesim turtle_teleop_key`
+  - `./target/release/zenoh-bridge-dds -d 1`
+  - `./target/release/zenoh-bridge-dds -d 2`
+
+Notice that by default the 2 bridges will discover each other using UDP multicast.
+
+### _2 hosts, avoiding UDP multicast communication_
+By default DDS (and thus ROS2) uses UDP multicast for discovery and publications. But on some networks, UDP multicast is not or badly supported.  
+In such cases, deploying the `zenoh-bridge-dds` on both hosts will make it to:
+  - limit the DDS discovery traffic, as detailled in [this blog](https://zenoh.io/blog/2021-03-23-discovery/#leveraging-resource-generalisation)
+  - route all the DDS publications made on UDP multicast by each node through the zenoh protocol that by default uses TCP.
+
+Here are the commands to test this configuration with turtlesim:
+  - on host 1:
+    - `ROS_DOMAIN_ID=1 ros2 run turtlesim turtlesim_node`
+    - `./target/release/zenoh-bridge-dds -d 1 -l tcp/0.0.0.0:7447`
+  - on host 2:
+    - `ROS_DOMAIN_ID=2 ros2 run turtlesim turtle_teleop_key`
+    - `./target/release/zenoh-bridge-dds -d 2 -e tcp/<host-1-ip>:7447` - where `<host-1-ip>` is the IP of host 1
+
+Notice that to avoid unwanted direct DDS communication, 2 disctinct ROS domains are still used.
+
+
+
 
 
 
@@ -89,11 +132,6 @@ How to instal is described [here](https://docs.ros.org/en/rolling/Installation/D
 
 
 
-
-***
-##  Eclipse Zenoh: [Documentation](https://zenoh.io/docs/getting-started/first-app/) | [Repo](https://github.com/eclipse-zenoh)
-### installation:
-How to instal is described [here](https://zenoh.io/blog/2021-04-28-ros2-integration/).
 
 
 ***
