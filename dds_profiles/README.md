@@ -87,8 +87,8 @@ How to instal is described [here](https://docs.ros.org/en/rolling/Installation/D
 ***
 ##  Eclipse Zenoh: [Documentation](https://zenoh.io/docs/getting-started/first-app/) | [Repo](https://github.com/eclipse-zenoh)
 ### Installation:
-!!! Zenoh (zenohd) depends on systemd. However systemd is not present by default inside docker. So the following won't work out of the box. You first have to install systemd inside docker !!!
-How to instal is described [here](https://zenoh.io/blog/2021-04-28-ros2-integration/) or in more detail in the [github repo](https://github.com/eclipse-zenoh/zenoh-plugin-dds#How-to-install-it)
+!!! Zenoh (zenohd) depends on systemd. However systemd is not present by default inside docker. So the following won't work out of the box. You first have to install systemd inside docker !!!  
+How to install is described [here](https://zenoh.io/blog/2021-04-28-ros2-integration/) or in more detail in the [github repo](https://github.com/eclipse-zenoh/zenoh-plugin-dds#How-to-install-it)
 1. `echo "deb [trusted=yes] https://download.eclipse.org/zenoh/debian-repo/ /" | sudo tee -a /etc/apt/sources.list > /dev/null`
 2. `sudo apt update`
 3. `sudo apt install zenoh zenoh-plugin-dds zenoh-bridge-dds`.
@@ -120,7 +120,17 @@ Here are the commands to test this configuration with turtlesim:
 
 Notice that to avoid unwanted direct DDS communication, 2 disctinct ROS domains are still used.
 
+### Test with distributed control:
+TLDR: Start bridges with `-f` -> `./target/release/zenoh-bridge-dds -d 1 -f`  
+By default the bridge doesn't route throught zenoh the DDS discovery traffic to the remote bridges.  
+Meaning that, in case you use 2 **`zenoh-bridge-dds`** to interconnect 2 DDS domains, the DDS entities discovered in one domain won't be advertised in the other domain. Thus, the DDS data will be routed between the 2 domains only if matching readers and writers are declared in the 2 domains independently.
 
+This default behaviour has an impact on ROS2 behaviour: on one side of the bridge the ROS graph might not reflect all the nodes from the other side of the bridge. The `ros2 topic list` command might not list all the topics declared on the other side. And the **ROS graph** is limited to the nodes in each domain.
+
+But using the **`--fwd-discovery`** (or `-f`) option for all bridges make them behave differently:
+ - each bridge will forward via zenoh the local DDS discovery data to the remote bridges (in a more compact way than the original DDS discovery traffic)
+ - each bridge receiving DDS discovery data via zenoh will create a replica of the DDS reader or writer, with similar QoS. Those replicas will serve the route to/from zenoh, and will be discovered by the ROS2 nodes.
+ - each bridge will forward the `ros_discovery_info` data (in a less intensive way than the original publications) to the remote bridges. On reception, the remote bridges will convert the original entities' GIDs into the GIDs of the corresponding replicas, and re-publish on DDS the `ros_discovery_info`. The full ROS graph can then be discovered by the ROS2 nodes on each host.
 
 
 
