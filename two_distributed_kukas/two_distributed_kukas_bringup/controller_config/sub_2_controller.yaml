@@ -3,6 +3,9 @@
     update_rate: 10  # Hz
     sub_controller_manager: true
     distributed_interfaces_publish_period: 4
+    handles_qos_key: "sensor_data"
+    publish_evaluation_msg: false
+    evaluation_qos_key: "sensor_data"
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster

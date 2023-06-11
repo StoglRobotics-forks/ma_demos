@@ -1,6 +1,9 @@
 controller_manager:
   ros__parameters:
     central_controller_manager: true
+    handles_qos_key: "sensor_data"
+    publish_evaluation_msg: false
+    evaluation_qos_key: "sensor_data"
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
