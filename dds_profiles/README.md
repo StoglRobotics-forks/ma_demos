@@ -2,9 +2,10 @@
 Simple testing:
 Clone the ros2_demos project:
 1. Open two terminal.
-2. Execute `RMW_IMPLEMENTATION=<rmw_implementation>` e.g.: `RMW_IMPLEMENTATION=rmw_cyclonedds_cpp`
-3. In the first terminal: `ros2 run demo_nodes_cpp talker`
-4. In the second terminal: `ros2 run demo_nodes_cpp listener`
+2. Execute `RMW_IMPLEMENTATION=<rmw_implementation>` e.g.: `RMW_IMPLEMENTATION=rmw_cyclonedds_cpp` to set which dds version is used.
+3. In the first terminal: `RMW_IMPLEMENTATION=rmw_connextdds ros2 run demo_nodes_cpp talker`
+4. In the second terminal: `RMW_IMPLEMENTATION=rmw_connextdds ros2 run demo_nodes_py listener`
+5. !!!! Needs to passed as one command otherwise won't work. Don't know why only setting the environment variable is not enought... !!!
 ## Overview of ros2 middlewares: (Rolling default is Fast DDS)
 | **Product name**          | **License**                   | **RMW implementation**    |**Status** | **Working?** | **Testing**|
 | :-------------------:     | :----------:                  | :----------------------: | :-------------: | :---: |:---: |
