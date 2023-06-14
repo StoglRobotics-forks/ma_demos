@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, RegisterEventHandler
+from launch.actions import DeclareLaunchArgument, OpaqueFunction, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch.substitutions import (
     Command,
@@ -25,107 +25,13 @@ from launch.substitutions import (
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+from ma_demos_launch_helpers import select_kuka_robot
 
-def generate_launch_description():
-    declared_arguments = []
 
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "prefix",
-            default_value="",
-            description="Prefix of the joint names, useful for \
-        multi-robot setup. If changed than also joint names in the controllers' configuration \
-        have to be updated.",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "kuka_version",
-            default_value="kuka_kr16_2",
-            description="Change the control node which is used.",
-            choices=[
-                "kuka_kr16_2",
-                "kuka_kr5",
-            ],
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "use_mock_hardware",
-            default_value="false",
-            description="Start robot with fake hardware mirroring command to its states.",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "listen_ip_address",
-            default_value="172.20.19.101",
-            description="The ip address on of your device on which is listend.",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "listen_port",
-            default_value="49152",
-            description="The port on which is listend.",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "log_level_driver",
-            default_value="info",
-            description="Set the logging level of the loggers of all started nodes.",
-            choices=[
-                "debug",
-                "DEBUG",
-                "info",
-                "INFO",
-                "warn",
-                "WARN",
-                "error",
-                "ERROR",
-                "fatal",
-                "FATAL",
-            ],
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "log_level_all",
-            default_value="info",
-            description="Set the logging level of the loggers of all started nodes.",
-            choices=[
-                "debug",
-                "DEBUG",
-                "info",
-                "INFO",
-                "warn",
-                "WARN",
-                "error",
-                "ERROR",
-                "fatal",
-                "FATAL",
-            ],
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "control_node",
-            default_value="ros2_control_node_max_update_rate",
-            description="Change the control node which is used.",
-            choices=[
-                "ros2_control_node",
-                "ros2_control_node_steady_clock",
-                "ros2_control_node_max_update_rate",
-                "ros2_control_node_max_update_rate_sc",
-                "ros2_control_node_fixed_period",
-                "ros2_control_node_fixed_period_sc",
-            ],
-        )
-    )
-
+def create_nodes_to_launch(context, *args, **kwargs):
     # initialize arguments
     prefix = LaunchConfiguration("prefix")
+    robot = select_kuka_robot(LaunchConfiguration("robot_type").perform(context))
     use_mock_hardware = LaunchConfiguration("use_mock_hardware")
     control_node = LaunchConfiguration("control_node")
     listen_ip_address = LaunchConfiguration("listen_ip_address")
@@ -153,11 +59,14 @@ def generate_launch_description():
             " ",
             "controllers_file:=kuka_6dof_controllers.yaml",
             " ",
-            "robot_description_package:=kuka_kr16_support",
+            "robot_description_package:=",
+            robot["robot_description_package"],
             " ",
-            "robot_description_macro_file:=kr16_2_macro.xacro",
+            "robot_description_macro_file:=",
+            robot["robot_description_macro_file"],
             " ",
-            "robot_name:=kuka_kr16_2",
+            "robot_name:=",
+            robot["robot_name"],
             " ",
             "listen_ip_address:=",
             listen_ip_address,
@@ -248,4 +157,104 @@ def generate_launch_description():
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
     ]
 
-    return LaunchDescription(declared_arguments + nodes)
+    return nodes
+
+
+def generate_launch_description():
+    declared_arguments = []
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "prefix",
+            default_value="",
+            description="Prefix of the joint names, useful for \
+        multi-robot setup. If changed than also joint names in the controllers' configuration \
+        have to be updated.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "robot_type",
+            default_value="kuka_kr5",
+            description="The robot which should be launched.",
+            choices=["kuka_kr3", "kuka_kr5", "kuka_kr16_2"],
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_mock_hardware",
+            default_value="false",
+            description="Start robot with fake hardware mirroring command to its states.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "listen_ip_address",
+            default_value="172.20.19.101",
+            description="The ip address on of your device on which is listend.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "listen_port",
+            default_value="49152",
+            description="The port on which is listend.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "log_level_driver",
+            default_value="info",
+            description="Set the logging level of the loggers of all started nodes.",
+            choices=[
+                "debug",
+                "DEBUG",
+                "info",
+                "INFO",
+                "warn",
+                "WARN",
+                "error",
+                "ERROR",
+                "fatal",
+                "FATAL",
+            ],
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "log_level_all",
+            default_value="info",
+            description="Set the logging level of the loggers of all started nodes.",
+            choices=[
+                "debug",
+                "DEBUG",
+                "info",
+                "INFO",
+                "warn",
+                "WARN",
+                "error",
+                "ERROR",
+                "fatal",
+                "FATAL",
+            ],
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "control_node",
+            default_value="ros2_control_node_max_update_rate",
+            description="Change the control node which is used.",
+            choices=[
+                "ros2_control_node",
+                "ros2_control_node_steady_clock",
+                "ros2_control_node_max_update_rate",
+                "ros2_control_node_max_update_rate_sc",
+                "ros2_control_node_fixed_period",
+                "ros2_control_node_fixed_period_sc",
+            ],
+        )
+    )
+
+    return LaunchDescription(
+        declared_arguments + [OpaqueFunction(function=create_nodes_to_launch)]
+    )
