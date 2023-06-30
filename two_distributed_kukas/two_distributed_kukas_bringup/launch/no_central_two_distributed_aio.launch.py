@@ -189,7 +189,7 @@ def create_nodes_to_launch(context, *args, **kwargs):
             satellite_2_ns_name + "_",
             " ",
             "origin:=",
-            '"0 3 0"',
+            '"0 0.5 0"',
             " ",
             "use_mock_hardware:=",
             use_mock_hardware,

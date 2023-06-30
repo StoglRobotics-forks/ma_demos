@@ -1,0 +1,22 @@
+move_lin:
+  ros__parameters:
+    controller_name: "position_trajectory_controller"
+    wait_sec_between_publish: 2
+    duplicate: True
+    joints:
+      - /sub_1/sub_1_joint_a1
+      - /sub_1/sub_1_joint_a2
+      - /sub_1/sub_1_joint_a3
+      - /sub_1/sub_1_joint_a4
+      - /sub_1/sub_1_joint_a5
+      - /sub_1/sub_1_joint_a6
+      - /sub_2/sub_2_joint_a1
+      - /sub_2/sub_2_joint_a2
+      - /sub_2/sub_2_joint_a3
+      - /sub_2/sub_2_joint_a4
+      - /sub_2/sub_2_joint_a5
+      - /sub_2/sub_2_joint_a6
+
+    goal_names: ["traj1", "traj2"]
+    traj1: "/home/manuelm/workspaces/ma/concept_testing/src/ma_demos/two_distributed_kukas/two_distributed_kukas_bringup/controller_config/joint_trajectory_goals/down.yaml"
+    traj2: "/home/manuelm/workspaces/ma/concept_testing/src/ma_demos/two_distributed_kukas/two_distributed_kukas_bringup/controller_config/joint_trajectory_goals/up.yaml"
