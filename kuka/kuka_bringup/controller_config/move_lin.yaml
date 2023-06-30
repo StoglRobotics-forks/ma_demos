@@ -1,0 +1,15 @@
+move_lin:
+  ros__parameters:
+    controller_name: "position_trajectory_controller"
+    wait_sec_between_publish: 1
+    joints:
+      - joint_a1
+      - joint_a2
+      - joint_a3
+      - joint_a4
+      - joint_a5
+      - joint_a6
+
+    goal_names: ["traj1", "traj2"]
+    traj1: "/home/manuelm/workspaces/ma/concept_testing/src/ma_demos/kuka/kuka_bringup/controller_config/down.yaml"
+    traj2: "/home/manuelm/workspaces/ma/concept_testing/src/ma_demos/kuka/kuka_bringup/controller_config/up.yaml"

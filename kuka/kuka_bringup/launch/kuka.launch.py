@@ -175,7 +175,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "robot_type",
-            default_value="kuka_kr5",
+            default_value="kuka_kr3",
             description="The robot which should be launched.",
             choices=["kuka_kr3", "kuka_kr5", "kuka_kr16_2"],
         )
